@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PW Backlog Tracker — Prayas JEE 2027</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --ink: #171d29;
+    --ink-2: #1f2735;
+    --ink-3: #2a3345;
+    --paper: #eee9dd;
+    --paper-dim: #a9a496;
+    --lamp: #f2a03d;
+    --lamp-dim: #a8712e;
+    --green: #6fae66;
+    --green-dim: #4d7a46;
+    --coral: #d9694a;
+    --coral-dim: #a34c34;
+    --violet: #9c8cd6;
+    --violet-dim: #6f629e;
+    --line: rgba(238,233,221,0.12);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  body { display: flex; justify-content: center; padding: 32px 14px 90px; }
+
+  .app { width: 100%; max-width: 560px; }
+
+  .eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--lamp-dim);
+    margin: 0 0 6px;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 28px;
+    line-height: 1.15;
+    margin: 0 0 20px;
+  }
+  h1 em { font-style: italic; color: var(--lamp); }
+
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .stat {
+    background: var(--ink-2);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .stat .num {
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .stat .label {
+    font-size: 10.5px;
+    color: var(--paper-dim);
+    margin-top: 2px;
+  }
+  .stat.backlog .num { color: var(--coral); }
+  .stat.done .num { color: var(--green); }
+  .stat.lect .num { color: var(--violet); }
+
+  .panel {
+    background: var(--ink-2);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+  }
+  .panel-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--paper-dim);
+    margin: 0 0 10px;
+  }
+
+  .priority-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 0;
+    font-size: 13.5px;
+    border-top: 1px solid var(--line);
+  }
+  .priority-item:first-of-type { border-top: none; }
+  .priority-item .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--coral); flex-shrink: 0;
+  }
+  .priority-item .subj-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10.5px;
+    color: var(--paper-dim);
+  }
+  .priority-item .ch-name { flex: 1; }
+
+  .alarm-row, .reward-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .alarm-row input[type="time"], .reward-row input[type="text"] { flex: 1; min-width: 120px; }
+  .toggle-btn {
+    background: var(--ink-3);
+    border: 1px solid var(--line);
+    color: var(--paper-dim);
+    font-size: 12.5px;
+  }
+  .toggle-btn.active { background: rgba(111,174,102,0.16); border-color: var(--green-dim); color: var(--green); }
+  .alarm-banner {
+    background: rgba(242,160,61,0.14);
+    border: 1px solid var(--lamp-dim);
+    color: var(--lamp);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 13.5px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .reward-banner {
+    background: rgba(111,174,102,0.14);
+    border: 1px solid var(--green-dim);
+    color: var(--green);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 13.5px;
+    margin-bottom: 16px;
+  }
+  .small-note { font-size: 11.5px; color: var(--paper-dim); margin-top: 8px; }
+
+  .add-subject {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  input, select {
+    font-family: 'Inter', sans-serif;
+    background: var(--ink-3);
+    border: 1px solid var(--line);
+    color: var(--paper);
+    border-radius: 10px;
+    padding: 10px 11px;
+    font-size: 13.5px;
+  }
+  input::placeholder { color: var(--paper-dim); }
+
+  .add-subject input[type="text"] { flex: 1; min-width: 140px; }
+  .add-subject input[type="date"] { width: 132px; }
+
+  button {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 13.5px;
+    border-radius: 10px;
+    padding: 10px 14px;
+    border: none;
+    cursor: pointer;
+  }
+  button:active { transform: scale(0.97); }
+
+  .btn-lamp { background: var(--lamp); color: #241505; }
+
+  .subject-card {
+    background: var(--ink-2);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 18px 18px 6px;
+    margin-bottom: 14px;
+  }
+
+  .subject-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 8px;
+    gap: 8px;
+  }
+
+  .subject-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; }
+
+  .subject-meta {
+    font-family: 'Space Mono', monospace;
+    font-size: 11.5px;
+    color: var(--paper-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .deadline-tag { padding: 3px 7px; border-radius: 6px; border: 1px solid var(--line); }
+  .deadline-tag.overdue { color: var(--coral); border-color: var(--coral-dim); background: rgba(217,105,74,0.12); }
+  .deadline-tag.soon { color: var(--lamp); border-color: var(--lamp-dim); background: rgba(242,160,61,0.12); }
+
+  .progress-track { height: 6px; background: var(--ink-3); border-radius: 3px; overflow: hidden; margin-bottom: 14px; }
+  .progress-fill { height: 100%; background: var(--lamp); border-radius: 3px; }
+
+  .chapter-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 0;
+    border-top: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+
+  .prio-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .prio-dot.high { background: var(--coral); }
+  .prio-dot.medium { background: var(--lamp); }
+  .prio-dot.low { background: var(--paper-dim); }
+
+  .chapter-name { flex: 1; min-width: 90px; font-size: 13.5px; }
+
+  .lec-counter { display: flex; align-items: center; gap: 4px; font-family: 'Space Mono', monospace; font-size: 12px; color: var(--paper-dim); }
+  .lec-btn { background: var(--ink-3); color: var(--paper); padding: 2px 8px; font-size: 13px; border-radius: 6px; }
+
+  .chip {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11.5px; padding: 6px 9px; border-radius: 8px;
+    border: 1px solid var(--line); cursor: pointer;
+    color: var(--paper-dim); white-space: nowrap; user-select: none;
+  }
+  .chip.on-notes { background: rgba(111,174,102,0.14); border-color: var(--green-dim); color: var(--green); }
+  .chip.on-test { background: rgba(156,140,214,0.16); border-color: var(--violet-dim); color: var(--violet); }
+
+  .remove-btn { background: transparent; color: var(--paper-dim); font-size: 15px; padding: 3px 5px; line-height: 1; }
+  .remove-btn:hover { color: var(--coral); }
+
+  .add-chapter { display: flex; gap: 6px; padding: 12px 0; border-top: 1px solid var(--line); margin-top: 2px; flex-wrap: wrap; }
+  .add-chapter input[type="text"] { flex: 2; min-width: 110px; }
+  .add-chapter input[type="number"] { width: 62px; }
+  .add-chapter select { width: 88px; }
+
+  .empty-note { font-size: 12.5px; color: var(--paper-dim); padding: 6px 0 12px; }
+
+  .backlog-badge {
+    font-family: 'Space Mono', monospace; font-size: 10.5px; color: var(--coral);
+    background: rgba(217,105,74,0.14); border: 1px solid var(--coral-dim);
+    padding: 3px 7px; border-radius: 6px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <p class="eyebrow">physics wallah · prayas jee 2027</p>
+  <h1>Clear the <em>backlog</em>, one chapter at a time.</h1>
+
+  <div class="alarm-row" style="margin-bottom:16px;">
+    <button class="btn-lamp" id="open-pw-app">Open in PW app</button>
+    <a href="https://www.pw.live/" target="_blank" rel="noopener" class="small-note" style="margin:0;">or open pw.live in browser</a>
+  </div>
+
+  <div id="alarm-banner-slot"></div>
+  <div id="reward-banner-slot"></div>
+
+  <div class="summary">
+    <div class="stat"><div class="num" id="stat-total">0</div><div class="label">chapters</div></div>
+    <div class="stat done"><div class="num" id="stat-done">0</div><div class="label">fully done</div></div>
+    <div class="stat backlog"><div class="num" id="stat-backlog">0</div><div class="label">backlog</div></div>
+    <div class="stat lect"><div class="num" id="stat-lect">0/0</div><div class="label">lectures</div></div>
+  </div>
+
+  <div class="panel" id="priority-panel">
+    <p class="panel-title">Most important pending chapters</p>
+    <div id="priority-list"></div>
+  </div>
+
+  <div class="panel">
+    <p class="panel-title">Wake-up alarm</p>
+    <div class="alarm-row">
+      <input type="time" id="alarm-time">
+      <button class="toggle-btn" id="alarm-toggle">Off</button>
+    </div>
+    <p class="small-note" id="alarm-note">Reminds you while this tab/app is open — it can't wake a closed app on Android, so keep this open in the background or set a real phone alarm too.</p>
+  </div>
+
+  <div class="panel">
+    <p class="panel-title">Backlog-cleared reward</p>
+    <div class="reward-row">
+      <input type="text" id="reward-input" placeholder="e.g. 30 min gaming, order dessert...">
+      <button class="btn-lamp" id="reward-save">Save</button>
+    </div>
+    <p class="small-note">Rewards earned: <span id="reward-count">0</span></p>
+  </div>
+
+  <div class="add-subject">
+    <input type="text" id="subject-input" placeholder="Add a subject, e.g. Physics">
+    <input type="date" id="subject-deadline-input" title="Backlog deadline">
+    <button class="btn-lamp" id="add-subject-btn">Add</button>
+  </div>
+
+  <div id="subjects-list"></div>
+</div>
+
+<script>
+  var KEY = 'pw-backlog-data';
+  var data = { subjects: [], settings: { alarmTime: '', alarmOn: false, rewardText: '', rewardsEarned: 0, lastAlarmFire: '', lastRewardFire: '' } };
+
+  function uid() { return Math.random().toString(36).slice(2, 9); }
+  function todayStr() { return new Date().toISOString().slice(0, 10); }
+
+  function migrate() {
+    if (!data.settings) data.settings = { alarmTime: '', alarmOn: false, rewardText: '', rewardsEarned: 0, lastAlarmFire: '', lastRewardFire: '' };
+    data.subjects.forEach(function(s) {
+      if (s.deadline === undefined) s.deadline = '';
+      s.chapters.forEach(function(c) {
+        if (c.lecturesTotal === undefined) {
+          c.lecturesTotal = 1;
+          c.lecturesDone = c.lecture ? 1 : 0;
+          delete c.lecture;
+        }
+        if (c.test === undefined) c.test = false;
+        if (c.priority === undefined) c.priority = 'medium';
+      });
+    });
+  }
+
+  function load() {
+    window.storage.get(KEY, false).then(function(res) {
+      if (res && res.value) data = JSON.parse(res.value);
+      migrate();
+      render();
+    }).catch(function() {
+      migrate();
+      render();
+    });
+  }
+
+  function save() {
+    try { window.storage.set(KEY, JSON.stringify(data), false); } catch (e) { console.error('storage error', e); }
+  }
+
+  function findSubject(id) { return data.subjects.filter(function(s) { return s.id === id; })[0]; }
+  function findChapter(subj, id) { return subj.chapters.filter(function(c) { return c.id === id; })[0]; }
+  function isChapterDone(c) { return c.lecturesTotal > 0 && c.lecturesDone >= c.lecturesTotal && c.notes && c.test; }
+
+  function addSubject() {
+    var nameInput = document.getElementById('subject-input');
+    var deadlineInput = document.getElementById('subject-deadline-input');
+    var name = nameInput.value.trim();
+    if (!name) return;
+    data.subjects.push({ id: uid(), name: name, expanded: true, deadline: deadlineInput.value || '', chapters: [] });
+    nameInput.value = '';
+    deadlineInput.value = '';
+    save();
+    render();
+  }
+
+  function addChapter(subjectId, name, total, priority) {
+    if (!name.trim()) return;
+    var subj = findSubject(subjectId);
+    var t = parseInt(total, 10);
+    if (!t || t < 1) t = 1;
+    subj.chapters.push({ id: uid(), name: name.trim(), priority: priority || 'medium', lecturesTotal: t, lecturesDone: 0, notes: false, test: false });
+    save();
+    render();
+  }
+
+  function bumpLecture(subjectId, chapterId, delta) {
+    var subj = findSubject(subjectId);
+    var c = findChapter(subj, chapterId);
+    c.lecturesDone = Math.max(0, Math.min(c.lecturesTotal, c.lecturesDone + delta));
+    save();
+    render();
+  }
+
+  function toggleField(subjectId, chapterId, field) {
+    var subj = findSubject(subjectId);
+    var c = findChapter(subj, chapterId);
+    c[field] = !c[field];
+    save();
+    render();
+  }
+
+  function cyclePriority(subjectId, chapterId) {
+    var subj = findSubject(subjectId);
+    var c = findChapter(subj, chapterId);
+    var order = ['low', 'medium', 'high'];
+    c.priority = order[(order.indexOf(c.priority) + 1) % 3];
+    save();
+    render();
+  }
+
+  function removeChapter(subjectId, chapterId) {
+    var subj = findSubject(subjectId);
+    subj.chapters = subj.chapters.filter(function(c) { return c.id !== chapterId; });
+    save();
+    render();
+  }
+
+  function removeSubject(subjectId) {
+    data.subjects = data.subjects.filter(function(s) { return s.id !== subjectId; });
+    save();
+    render();
+  }
+
+  function toggleExpand(subjectId) {
+    var subj = findSubject(subjectId);
+    subj.expanded = !subj.expanded;
+    render();
+  }
+
+  function setDeadline(subjectId, value) {
+    var subj = findSubject(subjectId);
+    subj.deadline = value;
+    save();
+    render();
+  }
+
+  function daysUntil(dateStr) {
+    if (!dateStr) return null;
+    var target = new Date(dateStr + 'T00:00:00');
+    var now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return Math.round((target - now) / 86400000);
+  }
+
+  function computeStats() {
+    var total = 0, done = 0, lecDone = 0, lecTotal = 0;
+    data.subjects.forEach(function(s) {
+      s.chapters.forEach(function(c) {
+        total++;
+        if (isChapterDone(c)) done++;
+        lecDone += c.lecturesDone;
+        lecTotal += c.lecturesTotal;
+      });
+    });
+    return { total: total, done: done, backlog: total - done, lecDone: lecDone, lecTotal: lecTotal };
+  }
+
+  function priorityScore(p) { return p === 'high' ? 2 : (p === 'medium' ? 1 : 0); }
+
+  function renderPriorityPanel() {
+    var items = [];
+    data.subjects.forEach(function(s) {
+      s.chapters.forEach(function(c) {
+        if (!isChapterDone(c)) items.push({ subj: s.name, ch: c });
+      });
+    });
+    items.sort(function(a, b) { return priorityScore(b.ch.priority) - priorityScore(a.ch.priority); });
+    items = items.slice(0, 6);
+    var panel = document.getElementById('priority-panel');
+    if (items.length === 0) {
+      panel.style.display = 'none';
+      return;
+    }
+    panel.style.display = '';
+    var html = '';
+    items.forEach(function(it) {
+      html += '<div class="priority-item"><span class="dot" style="background:' + (it.ch.priority === 'high' ? 'var(--coral)' : it.ch.priority === 'medium' ? 'var(--lamp)' : 'var(--paper-dim)') + '"></span>';
+      html += '<span class="ch-name">' + escapeHtml(it.ch.name) + '</span>';
+      html += '<span class="subj-tag">' + escapeHtml(it.subj) + '</span></div>';
+    });
+    document.getElementById('priority-list').innerHTML = html;
+  }
+
+  function checkAlarm() {
+    var s = data.settings;
+    var slot = document.getElementById('alarm-banner-slot');
+    if (!s.alarmOn || !s.alarmTime) { slot.innerHTML = ''; return; }
+    var now = new Date();
+    var hh = String(now.getHours()).padStart(2, '0');
+    var mm = String(now.getMinutes()).padStart(2, '0');
+    var current = hh + ':' + mm;
+    var fireKey = todayStr() + ' ' + s.alarmTime;
+    if (current >= s.alarmTime && s.lastAlarmFire !== fireKey) {
+      s.lastAlarmFire = fireKey;
+      save();
+      if (window.Notification && Notification.permission === 'granted') {
+        try { new Notification('PW backlog', { body: 'Time to study — backlog is waiting.' }); } catch (e) {}
+      }
+    }
+    if (s.lastAlarmFire === fireKey) {
+      slot.innerHTML = '<div class="alarm-banner"><span>Alarm fired at ' + s.alarmTime + ' — time to open PW and clear backlog.</span><button class="remove-btn" id="dismiss-alarm">&times;</button></div>';
+      var dismiss = document.getElementById('dismiss-alarm');
+      if (dismiss) dismiss.addEventListener('click', function() { slot.innerHTML = ''; });
+    } else {
+      slot.innerHTML = '';
+    }
+  }
+
+  function checkReward() {
+    var stats = computeStats();
+    var s = data.settings;
+    var slot = document.getElementById('reward-banner-slot');
+    if (stats.total > 0 && stats.backlog === 0 && s.lastRewardFire !== todayStr()) {
+      s.lastRewardFire = todayStr();
+      s.rewardsEarned = (s.rewardsEarned || 0) + 1;
+      save();
+    }
+    if (s.lastRewardFire === todayStr() && stats.total > 0 && stats.backlog === 0) {
+      var text = s.rewardText ? s.rewardText : 'Pick your reward!';
+      slot.innerHTML = '<div class="reward-banner">Backlog cleared — you earned it: ' + escapeHtml(text) + '</div>';
+    } else {
+      slot.innerHTML = '';
+    }
+  }
+
+  function render() {
+    var stats = computeStats();
+    document.getElementById('stat-total').textContent = stats.total;
+    document.getElementById('stat-done').textContent = stats.done;
+    document.getElementById('stat-backlog').textContent = stats.backlog;
+    document.getElementById('stat-lect').textContent = stats.lecDone + '/' + stats.lecTotal;
+
+    var s = data.settings;
+    document.getElementById('alarm-time').value = s.alarmTime || '';
+    var toggleBtn = document.getElementById('alarm-toggle');
+    toggleBtn.textContent = s.alarmOn ? 'On' : 'Off';
+    toggleBtn.className = 'toggle-btn' + (s.alarmOn ? ' active' : '');
+    document.getElementById('reward-input').value = s.rewardText || '';
+    document.getElementById('reward-count').textContent = s.rewardsEarned || 0;
+
+    renderPriorityPanel();
+
+    var listEl = document.getElementById('subjects-list');
+    if (data.subjects.length === 0) {
+      listEl.innerHTML = '<p class="empty-note">No subjects yet. Add one above to start tracking chapters.</p>';
+    } else {
+      var html = '';
+      data.subjects.forEach(function(subj) {
+        var sTotal = subj.chapters.length;
+        var sDone = subj.chapters.filter(isChapterDone).length;
+        var sBacklog = sTotal - sDone;
+        var pct = sTotal === 0 ? 0 : Math.round((subj.chapters.reduce(function(sum, c) {
+          var frac = (c.lecturesTotal > 0 ? c.lecturesDone / c.lecturesTotal : 0) * (1 / 3) + (c.notes ? 1 / 3 : 0) + (c.test ? 1 / 3 : 0);
+          return sum + frac;
+        }, 0) / sTotal) * 100);
+
+        var dLeft = daysUntil(subj.deadline);
+        var deadlineHtml = '';
+        if (subj.deadline) {
+          var cls = dLeft < 0 ? 'overdue' : (dLeft <= 3 ? 'soon' : '');
+          var label = dLeft < 0 ? Math.abs(dLeft) + 'd overdue' : (dLeft === 0 ? 'due today' : dLeft + 'd left');
+          deadlineHtml = '<span class="deadline-tag ' + cls + '">' + label + '</span>';
+        }
+
+        html += '<div class="subject-card">';
+        html += '<div class="subject-head" data-toggle="' + subj.id + '">';
+        html += '<span class="subject-title">' + escapeHtml(subj.name) + '</span>';
+        html += '<span class="subject-meta">';
+        if (sBacklog > 0) html += '<span class="backlog-badge">' + sBacklog + ' pending</span>';
+        html += deadlineHtml;
+        html += pct + '%';
+        html += '<button class="remove-btn" data-remove-subject="' + subj.id + '" title="Remove subject">&times;</button>';
+        html += '</span></div>';
+        html += '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>';
+
+        if (subj.expanded) {
+          html += '<div class="alarm-row" style="margin-bottom:10px;">';
+          html += '<label class="small-note" style="margin:0;">Backlog deadline&nbsp;</label>';
+          html += '<input type="date" data-deadline-input="' + subj.id + '" value="' + (subj.deadline || '') + '" style="flex:0;">';
+          html += '</div>';
+
+          if (sTotal === 0) {
+            html += '<p class="empty-note">No chapters yet. Add lectures below.</p>';
+          }
+          subj.chapters.forEach(function(c) {
+            html += '<div class="chapter-row">';
+            html += '<span class="prio-dot ' + c.priority + '" data-cycle-priority="' + subj.id + '|' + c.id + '" title="Tap to change priority (' + c.priority + ')"></span>';
+            html += '<span class="chapter-name">' + escapeHtml(c.name) + '</span>';
+            html += '<span class="lec-counter">';
+            html += '<button class="lec-btn" data-lec="' + subj.id + '|' + c.id + '|-1">-</button>';
+            html += '<span>' + c.lecturesDone + '/' + c.lecturesTotal + '</span>';
+            html += '<button class="lec-btn" data-lec="' + subj.id + '|' + c.id + '|1">+</button>';
+            html += '</span>';
+            html += '<span class="chip' + (c.notes ? ' on-notes' : '') + '" data-toggle-field="' + subj.id + '|' + c.id + '|notes">' + (c.notes ? '\u2713 notes' : 'notes') + '</span>';
+            html += '<span class="chip' + (c.test ? ' on-test' : '') + '" data-toggle-field="' + subj.id + '|' + c.id + '|test">' + (c.test ? '\u2713 test' : 'test') + '</span>';
+            html += '<button class="remove-btn" data-remove-chapter="' + subj.id + '|' + c.id + '" title="Remove chapter">&times;</button>';
+            html += '</div>';
+          });
+
+          html += '<div class="add-chapter">';
+          html += '<input type="text" placeholder="Chapter / lecture name" data-chapter-input="' + subj.id + '">';
+          html += '<input type="number" min="1" placeholder="lec" data-chapter-total="' + subj.id + '" value="1">';
+          html += '<select data-chapter-priority="' + subj.id + '"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select>';
+          html += '<button class="btn-lamp" data-add-chapter="' + subj.id + '">Add</button>';
+          html += '</div>';
+        }
+
+        html += '</div>';
+      });
+      listEl.innerHTML = html;
+    }
+
+    checkAlarm();
+    checkReward();
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // Event delegation — single listener per event type, works across every re-render
+  // (keeps this fast on lower-powered devices instead of rebinding many listeners each render).
+  document.addEventListener('click', function(e) {
+    var t = e.target;
+    var remSubj = t.closest('[data-remove-subject]');
+    if (remSubj) { e.stopPropagation(); removeSubject(remSubj.getAttribute('data-remove-subject')); return; }
+    var head = t.closest('[data-toggle]');
+    if (head) { toggleExpand(head.getAttribute('data-toggle')); return; }
+    var cyc = t.closest('[data-cycle-priority]');
+    if (cyc) { var p = cyc.getAttribute('data-cycle-priority').split('|'); cyclePriority(p[0], p[1]); return; }
+    var lec = t.closest('[data-lec]');
+    if (lec) { var lp = lec.getAttribute('data-lec').split('|'); bumpLecture(lp[0], lp[1], parseInt(lp[2], 10)); return; }
+    var chip = t.closest('[data-toggle-field]');
+    if (chip) { var fp = chip.getAttribute('data-toggle-field').split('|'); toggleField(fp[0], fp[1], fp[2]); return; }
+    var remCh = t.closest('[data-remove-chapter]');
+    if (remCh) { var rp = remCh.getAttribute('data-remove-chapter').split('|'); removeChapter(rp[0], rp[1]); return; }
+    var addCh = t.closest('[data-add-chapter]');
+    if (addCh) {
+      var sid = addCh.getAttribute('data-add-chapter');
+      var nameEl = document.querySelector('[data-chapter-input="' + sid + '"]');
+      var totalEl = document.querySelector('[data-chapter-total="' + sid + '"]');
+      var prioEl = document.querySelector('[data-chapter-priority="' + sid + '"]');
+      addChapter(sid, nameEl.value, totalEl.value, prioEl.value);
+      return;
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter') return;
+    if (e.target.matches('[data-chapter-input]')) {
+      var sid = e.target.getAttribute('data-chapter-input');
+      var totalEl = document.querySelector('[data-chapter-total="' + sid + '"]');
+      var prioEl = document.querySelector('[data-chapter-priority="' + sid + '"]');
+      addChapter(sid, e.target.value, totalEl.value, prioEl.value);
+    }
+  });
+
+  document.addEventListener('change', function(e) {
+    var dInput = e.target.closest('[data-deadline-input]');
+    if (dInput) { setDeadline(dInput.getAttribute('data-deadline-input'), dInput.value); return; }
+  });
+
+  document.getElementById('add-subject-btn').addEventListener('click', addSubject);
+  document.getElementById('subject-input').addEventListener('keydown', function(e) { if (e.key === 'Enter') addSubject(); });
+
+  document.getElementById('alarm-time').addEventListener('change', function(e) {
+    data.settings.alarmTime = e.target.value;
+    save();
+    checkAlarm();
+  });
+
+  document.getElementById('alarm-toggle').addEventListener('click', function() {
+    data.settings.alarmOn = !data.settings.alarmOn;
+    if (data.settings.alarmOn && window.Notification && Notification.permission === 'default') {
+      try { Notification.requestPermission(); } catch (e) {}
+    }
+    save();
+    render();
+  });
+
+  document.getElementById('reward-save').addEventListener('click', function() {
+    data.settings.rewardText = document.getElementById('reward-input').value.trim();
+    save();
+  });
+
+  setInterval(checkAlarm, 30000);
+
+  // Tries to launch the installed PW Android app (package: xyz.penpencil.physicswala —
+  // "PW - India's Learning Platform" on Google Play). If it isn't installed, Android's
+  // intent resolver falls back to the Play Store listing automatically.
+  document.getElementById('open-pw-app').addEventListener('click', function() {
+    var pkg = 'xyz.penpencil.physicswala';
+    var fallback = encodeURIComponent('https://play.google.com/store/apps/details?id=' + pkg);
+    var intentUrl = 'intent://#Intent;package=' + pkg + ';scheme=https;S.browser_fallback_url=' + fallback + ';end';
+    var isAndroid = /Android/i.test(navigator.userAgent);
+    if (isAndroid) {
+      window.location.href = intentUrl;
+    } else {
+      window.open('https://www.pw.live/', '_blank');
+    }
+  });
+
+  load();
+</script>
+</body>
+</html>
